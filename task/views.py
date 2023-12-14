@@ -8,7 +8,7 @@ from task.models import User, Task
 
 
 def index(request):
-    return HttpResponse("welcom Mona")
+    return HttpResponse("welcome Mona")
 
 
 def handle_error(message , status_code=400):
