@@ -18,7 +18,7 @@ def handle_error(message , status_code=400):
     }, status = status_code)
     
 
-class CreateUser(View):
+class UserAction(View):
     
     def post(self, request):
         if request.META.get('CONTENT_TYPE') != 'application/json':
@@ -38,25 +38,6 @@ class CreateUser(View):
 
 
 
-# def create_user(request):
-#     if request.META.get('CONTENT_TYPE') != 'application/json':
-#         return handle_error("the content is not valid, must be json")
-#     if request.method == "POST":
-#         data = json.loads(request.body)
-#         if "username" not in data:
-#             return handle_error("missed username field")
-#         else:
-#             user=User(username=data["username"])
-#             if "address" in data:
-#                 user.address = data["address"]
-#             user.save()
-#             return JsonResponse({
-#                 "status" : "success",
-#                 "message" : f"user {user.username} with id of {user.id} created!"
-#             })
-#     else:
-#         return handle_error("only POST method works so far")
-class ListUser(View):
     
     def get(self, request):
         
@@ -72,7 +53,6 @@ class ListUser(View):
         return JsonResponse(result, safe=False)
 
 
-class UpdateUser(View):
 
     def put(self,request, user_id):
         if request.META.get('CONTENT_TYPE') != 'application/json':
@@ -91,7 +71,6 @@ class UpdateUser(View):
             })
         
 
-class DeleteUser(View):
 
     def delete(self,request, user_id):
         user = get_object_or_404(User, id=user_id)
@@ -102,7 +81,7 @@ class DeleteUser(View):
                     "message" : f"user {user_id} deleted!"
                 })
 
-class CreateTask(View):
+class TaskAction(View):
     
     def post(self,request,user_id):
         if request.META.get('CONTENT_TYPE') != 'application/json':
@@ -126,48 +105,43 @@ class CreateTask(View):
             except  Exception as e:
                 # Handle IntegrityError and provide a meaningful response
                 return handle_error(f"IntegrityError: {e}")
-        
 
-#TODO: create each user sees only their own tasks.
-
-
-class ListTask(View):
-
-
-    def get(self,request, user_id):
-        user = User.get_object_or_404(User, id=user_id)
-        tasks=Task.objects.filter(user=user)
+    def get(self, request, user_id):
+        user = get_object_or_404(User, id=user_id)
+        tasks = Task.objects.filter(user=user)
         result = []
         for task in tasks:
             result.append({
-                "title":task.title,
-                "task_id":task.id,
-                "user_id" : task.user.id,
-                "done" : task.done,
-                "username" : task.user.username,
-                "createdAt" : task.createdAt
+                "title": task.title,
+                "task_id": task.id,
+                "user_id": task.user.id,
+                "done": task.done,
+                "username": task.user.username,
+                "createdAt": task.createdAt
             })
         return JsonResponse(result, safe=False)
 
-#TODO: change update_task every user can update their own tasks
-class UpdateTask(View):
+
     
-    def put(request, user_id, task_id):  
+    def put(self, request, user_id, task_id):  # Add 'self' as the first parameter
         if request.META.get('CONTENT_TYPE') != 'application/json':
             return handle_error("the content is not valid, must be json")
-        user = User.get_object_or_404(User, id=user_id)
-        task = get_object_or_404(Task, id= task_id, user=user)  # ,user_id=task.user.id because we can many user's the same task   should it be MAnyToMany?
+        
+        user = get_object_or_404(User, id=user_id)  # Use 'self.get_object_or_404'
+        task = get_object_or_404(Task, id=task_id, user=user)
+        
         new_task = json.loads(request.body)
-        for key,value in new_task.items():
-            if key in ["title", "description","due_date", "done" ]:
+        for key, value in new_task.items():
+            if key in ["title", "description", "due_date", "done"]:
                 setattr(task, key, value)
+        
         task.save()
         return JsonResponse({
-            "title" : "success",
-            "message": f" {task.user}'s task updated  !"
+            "title": "success",
+            "message": f"{task.user}'s task updated!"
         })
+
         
-class DeleteTask(View):
         
     def delete(self,request, task_id):
         task = get_object_or_404(Task, id=task_id)
@@ -179,7 +153,6 @@ class DeleteTask(View):
                 })
 
 
-class SearchTaskByUserId(View):
 
     def get(self,request, user_id ):     
         user = get_object_or_404(User, id=user_id)
@@ -195,9 +168,9 @@ class SearchTaskByUserId(View):
                 for task in tasks]
         return JsonResponse(results, safe=False)
 
-class SearchTask(View):
         
-    def search_task(request, user_id ):      # Query params, 
+        
+    def get(self, request, user_id):  
         user = get_object_or_404(User, id=user_id)
         
         # Accessing query parameters
@@ -220,5 +193,6 @@ class SearchTask(View):
                 "createdAt": task.createdAt
             })
         return JsonResponse(result, safe=False)
+
 
 
