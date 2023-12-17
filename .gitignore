@@ -1,0 +1,33 @@
+# .gitignore
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual Environment
+venv/
+env/
+
+# IDEs
+.vscode/
+.idea/
+
+# Compiled files
+*.pyc
+
+# User-specific files
+*.suo
+*.user
+*.suo
+*.user
+
+# Logs
+*.log
+
+# Test files
+
+
+# Markdown files
+*.md
