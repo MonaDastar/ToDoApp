@@ -1,17 +1,12 @@
 from django.contrib import admin
 from django.urls import path, include
-from task.views import index, UserAction,TaskAction
-
+from task.views import index, UserListView, UserDetailView, TaskListView, TaskDetailView
+#TODO change urls to user or users, action or actions
 urlpatterns = [
-    path("", index),
-    path("users/", UserAction.as_view()),
-    path("user-list/", UserAction.as_view()),
-    path("update-user/<int:user_id>/", UserAction.as_view()),
-    path("delete-user/<int:user_id>/", UserAction.as_view()),
-    path("create-task/<int:user_id>/", TaskAction.as_view()),
-    path("list-task/<int:user_id>/", TaskAction.as_view()),
-    path("update-task/<int:user_id>/<int:task_id>/", TaskAction.as_view()),
-    path("delete-task/<int:task_id>/", TaskAction.as_view()),
-    path("search-task-by-userid/<int:user_id>/", TaskAction.as_view()),
-    path("search-task/<int:user_id>/", TaskAction.as_view()),   
+    path("", index, name="index"),
+    path("users/", UserListView.as_view()),
+    path("users/<int:user_id>/", UserDetailView.as_view()),
+    path("task/<int:user_id>/", TaskListView.as_view()),
+    path("update-task/<int:user_id>/<int:task_id>/", TaskDetailView.as_view()),
+    path("delete-task/<int:task_id>/", TaskDetailView.as_view()),
 ]
