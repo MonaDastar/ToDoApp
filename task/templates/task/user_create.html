@@ -1,0 +1,6 @@
+<!-- task/templates/task/user_create.html -->
+<form method="post" action="{% url 'create_user' %}">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Create User</button>
+</form>

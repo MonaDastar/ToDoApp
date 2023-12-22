@@ -1,11 +1,11 @@
 import json
 
-from django.shortcuts import get_object_or_404, render
-from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, render, redirect
 from django.views import View
+from django.http import JsonResponse, HttpResponse
+from task.forms import CreateUserForm
 
 from task.models import User, Task
-
 
 def index(request):
     """
@@ -35,23 +35,9 @@ def handle_error(message, status_code=400):
 
 
 class UserListView(View):
-    """
-    View for handling user-related operations.
-
-    Methods:
-    - get: Retrieve a list of users.
-    - post: Create a new user.
-    """
+    
     def get(self, request):
-        """
-        Retrieve a list of users.
-
-        Args:
-            request: HttpRequest object
-
-        Returns:
-            JsonResponse object
-        """
+    
         users = User.objects.all()
         result = [
             {
@@ -62,32 +48,32 @@ class UserListView(View):
             }
             for user in users
         ]
-        return JsonResponse(result, safe=False)
+        return render(request, "task/user_list.html", {"users":result})
 
+    
+class CreateUserView(View):
+    def get(self, request):
+        form = CreateUserForm()
+        return render(request, "task/user_create.html", {"form": form})
+    
+    
     def post(self, request):
-        """
-        Create a new user.
-
-        Args:
-            request: HttpRequest object
-
-        Returns:
-            JsonResponse object
-        """
-        if request.META.get('CONTENT_TYPE') != 'application/json':
-            return handle_error("the content is not valid, must be json")
-        data = json.loads(request.body)
-        if "username" not in data:
-            return handle_error("missed username field")
-        else:
-            user = User(username=data["username"])
-            if "address" in data:
-                user.address = data["address"]
-            user.save()
-            return JsonResponse({
+        form = CreateUserForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            response_data = {
                 "status": "success",
-                "message": f"user {user.username} with id of {user.id} created!"
-            })
+                "message": "User created successfully",
+                "user": {
+                    "username": user.username,
+                    "address": user.address,
+                    "user_id": user.id,
+                    "createdAt": user.createdAt
+                }
+            }
+            return JsonResponse(response_data, status=201)
+        else:
+            return JsonResponse({"status": "error", "errors": form.errors}, status=400)
 
 
 class UserDetailView(View):
